@@ -1,7 +1,5 @@
 pipeline {
     agent any
-    def mvnHome = tool name: 'maven', type: 'maven'
-    def mvnCMD = "${mvnHome}/bin/mvn "
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id' // Replace with your Jenkins Docker credentials ID
@@ -28,6 +26,8 @@ pipeline {
             steps {
                 dir(params.PROJECT_NAME + '-backend') {
                     script {
+                        def mvnHome = tool name: 'maven', type: 'maven'
+                        def mvnCMD = "${mvnHome}/bin/mvn "
                         sh "${mvnCMD} clean install"
                     }
                 }
