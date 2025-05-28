@@ -9,18 +9,15 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.Hashing;
 
-import gabriell.felipe.itau.constant.Constant;
 import gabriell.felipe.itau.constant.RoleEnum;
 import gabriell.felipe.itau.dto.JwtRequestDTO;
 import gabriell.felipe.itau.dto.JwtResponseDTO;
 import gabriell.felipe.itau.dto.UserDTO;
-import gabriell.felipe.itau.exception.JwtException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -48,8 +45,7 @@ public class JwtService {
 	public Boolean validate(String authorization) throws Exception {
 		log.info("Initialize validateJwt");
 		UserDTO user = this.decodeJwt(authorization);
-		this.validateJwt(user);
-		return Boolean.TRUE;
+		return this.validateJwt(user);
 	}
 
 	public Boolean validateWithSecret(String authorization) throws Exception {
@@ -58,14 +54,10 @@ public class JwtService {
 			UserDTO user = this.decodeJwt(authorization);
 			this.validateJwt(user);
 			JWT.require(Algorithm.HMAC256(SECRET_ENCODED)).build().verify(authorization);
-		} catch (JWTVerificationException exception) {
-			log.error("Error: [{}]", exception);
-			throw new JwtException(Constant.INVALID_JWT_0001_MESSAGE, Constant.INVALID_JWT_0001);
 		} catch (Exception exception) {
-			log.error("Error: [{}]", exception);
-			throw exception;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 	
     public static DecodedJWT decodeToken(String token) {
@@ -73,11 +65,16 @@ public class JwtService {
     }
     
     private UserDTO decodeJwt(String authorization) throws Exception {
-    	String base64EncodedBody = authorization.split("\\.")[1];
-		String body = new String(Base64.getDecoder().decode(base64EncodedBody));
-		ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		UserDTO user = objectMapper.readValue(body, UserDTO.class);
-		log.info("Decoded UserDTO: [{}]", objectMapper.writeValueAsString(user));
+    	UserDTO user = null;
+    	try {
+    		String base64EncodedBody = authorization.split("\\.")[1];
+    		String body = new String(Base64.getDecoder().decode(base64EncodedBody));
+    		ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    		user = objectMapper.readValue(body, UserDTO.class);
+    		log.info("Decoded UserDTO: [{}]", objectMapper.writeValueAsString(user));
+		} catch (Exception e) {
+			log.info("Error to decode JWT [{}]", e);
+		}
 		return user;
 	}
 
@@ -85,19 +82,25 @@ public class JwtService {
 	    return name.matches("[a-zA-Z]+");
 	}
 	
-	private void validateJwt(UserDTO user) {
+	private Boolean validateJwt(UserDTO user) {
+		Boolean result = Boolean.TRUE;
+		
+		if (user == null) {
+			result = Boolean.FALSE; 
+		}
 		if (!RoleEnum.getAllValues().contains(user.getRole())) {
-			throw new JwtException(Constant.INVALID_JWT_0003_MESSAGE, Constant.INVALID_JWT_0003);
+			result = Boolean.FALSE;
 		}
 		if (!isAlpha(user.getName().replaceAll("\\s", ""))) {
-			throw new JwtException(Constant.INVALID_JWT_0002_MESSAGE, Constant.INVALID_JWT_0002);
+			result = Boolean.FALSE;
 		}
 		if (user.getName().length() > 256) {
-			throw new JwtException(Constant.INVALID_JWT_0002_MESSAGE, Constant.INVALID_JWT_0002);
+			result = Boolean.FALSE;
 		}
 		if (!primeNumberService.isPrimeNumber(Integer.parseInt(user.getSeed()))) {
-			throw new JwtException(Constant.INVALID_JWT_0004_MESSAGE, Constant.INVALID_JWT_0004);
+			result = Boolean.FALSE;
 		}
+		return result;
 	}
 
 }
