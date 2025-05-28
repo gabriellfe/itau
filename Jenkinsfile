@@ -24,11 +24,13 @@ pipeline {
 
         stage('Build with Maven') {
             steps {
-                dir(params.PROJECT_NAME + '-backend') {
-                    def mvnHome = tool name: 'maven', type: 'maven'
-                    def mvnCMD = "${mvnHome}/bin/mvn "
-                    sh "${mvnCMD} clean install"
-                    
+                script {
+                    dir(params.PROJECT_NAME + '-backend') {
+                        def mvnHome = tool name: 'maven', type: 'maven'
+                        def mvnCMD = "${mvnHome}/bin/mvn "
+                        sh "${mvnCMD} clean install"
+                        
+                    }
                 }
             }
         }
