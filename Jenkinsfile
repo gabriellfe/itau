@@ -1,65 +1,41 @@
-
 node {
-    def mvnHome = tool name: 'maven', type: 'maven'
+    def mvnHome = tool name: 'Maven', type: 'maven'
     def mvnCMD = "${mvnHome}/bin/mvn "
-    environment {
-        DOCKER_CREDENTIALS_ID = 'docker-credentials-id' // Replace with your Jenkins Docker credentials ID
-        DOCKER_IMAGE_NAME = "${env.PROJECT_NAME}:latest" // Define the Docker image name
-        DOCKER_REGISTRY = 'your-docker-registry-url' // Replace with your Docker registry URL
+    def serviceName = "itau-backend"
+    def imageName = "gabriellfe31222/itau"
+    def branch = "${params.BRANCH}"
+    echo "${branch}"
+    
+    stage('checkout') {
+            deleteDir()
+            checkout([$class: 'GitSCM',
+            branches: [[name: "${branch}"]],
+            extensions: [],
+            userRemoteConfigs: [[url: 'https://github.com/gabriellfe/itau.git']]])
     }
-    parameters {
-        string(name: 'PROJECT_NAME', defaultValue: 'itau', description: 'Name of the project to build')
-        string(name: 'BRANCH', defaultValue: 'master', description: 'Your Git branch to build')
-        string(name: 'GIT_REPO', defaultValue: 'https://github.com/gabriellfe/itau.git', description: 'Git repository URL') // Replace with your Git repo
+    stage('Build and Push Image') {
+			dir("${serviceName}"){
+            sh "${mvnCMD} clean install"
+            def pom = readMavenPom file: 'pom.xml'
+
+            withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh "docker login --username ${DOCKER_LOGIN} --password ${DOCKER_PASSWORD}"
+			def customImage = docker.build("${imageName}:${pom.version}")
+			customImage.push()
+			}
+			}
     }
-    stages {
-        stage('Clone Repository') {
-            steps {
-                script {
-                    git branch: params.BRANCH, url: params.GIT_REPO
-                }
-            }
-        }
-        stage('Build with Maven') {
-            steps {
-                script {
-                    dir(params.PROJECT_NAME + '-backend') {
-                        sh "${mvnCMD} clean install"
-                    }
-                }
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build the Docker image
-                    sh "docker build -t ${DOCKER_IMAGE_NAME} ."
-                }
-            }
-        }
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Log in to Docker Registry
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "echo $DOCKER_PASSWORD | docker login ${DOCKER_REGISTRY} --username $DOCKER_USERNAME --password-stdin"
-                        // Push the Docker image to the registry
-                        sh "docker push ${DOCKER_IMAGE_NAME}"
-                    }
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                        // Log in to Docker Registry
-                        withAWS(credentials:'jenkins-aws', region:'us-west-1') {
-                        sh 'aws sts get-caller-identity'
-                        sh 'aws eks update-kubeconfig --name eks --region us-east-1'
-                        sh 'helm install itau-eks itau-helm'
-                        }
-                }
-            }
-        }
+    stage('Deploy') {
+        	dir("k8s"){
+        	sh "sed -i 's/IMAGE_URL/${pom.version}/g' ${k8sName}-deployment.yaml"
+			sh "cat ${k8sName}-deployment.yaml"
+			
+			// cloud
+			withAWS(credentials:'jenkins-aws', region:'us-east-1') {
+			    sh "aws sts get-caller-identity"
+        	  //  sh "aws eks update-kubeconfig --name eks --region us-east-1"
+              //  sh "kubectl apply -f ./${k8sName}-deployment.yaml -n default --validate=false"
+				}
+			}
     }
 }
