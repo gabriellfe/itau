@@ -26,9 +26,7 @@ pipeline {
             steps {
                 script {
                     dir(params.PROJECT_NAME + '-backend') {
-                        def mvnHome = tool name: 'maven', type: 'maven'
-                        def mvnCMD = "${mvnHome}/bin/mvn "
-                        sh "${mvnCMD} clean install"
+                        sh "mvn clean install"
                         
                     }
                 }
