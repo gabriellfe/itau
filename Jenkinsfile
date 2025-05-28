@@ -1,5 +1,7 @@
 pipeline {
     agent any
+    def mvnHome = tool name: 'maven', type: 'maven'
+    def mvnCMD = "${mvnHome}/bin/mvn "
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id' // Replace with your Jenkins Docker credentials ID
@@ -18,18 +20,17 @@ pipeline {
             steps {
                 script {
                     git branch: params.BRANCH, url: params.GIT_REPO
-                 }
+                }
             }
         }
 
         stage('Build with Maven') {
             steps {
-                dir(params.PROJECT_NAME + "-backend") {
+                dir(params.PROJECT_NAME + '-backend') {
                     script {
-                        sh 'mvn clean install'
+                        sh "${mvnCMD} clean install"
                     }
                 }
-
             }
         }
 
@@ -58,14 +59,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Log in to Docker Registry
+                        // Log in to Docker Registry
                         withAWS(credentials:'jenkins-aws', region:'us-west-1') {
-			            sh "aws sts get-caller-identity"
-        	            sh "aws eks update-kubeconfig --name eks --region us-east-1"
-                        sh "helm install itau-eks itau-helm"
-				        }
-			}
+                        sh 'aws sts get-caller-identity'
+                        sh 'aws eks update-kubeconfig --name eks --region us-east-1'
+                        sh 'helm install itau-eks itau-helm'
+                        }
+                }
+            }
         }
-    }
     }
 }
