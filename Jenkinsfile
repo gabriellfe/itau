@@ -13,7 +13,7 @@ node {
             extensions: [],
             userRemoteConfigs: [[url: 'https://github.com/gabriellfe/itau.git']]])
     }
-    stage('Build and Push Image') {W
+    stage('Build and Push Image') {
             dir("${serviceName}"){
                 sh "${mvnCMD} clean install"
                 def pom = readMavenPom file: 'pom.xml'
