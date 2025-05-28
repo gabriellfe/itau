@@ -1,0 +1,8 @@
+services:
+  app:
+    image: itau-backend
+    build:
+      context: ./itau-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
