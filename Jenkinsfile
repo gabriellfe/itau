@@ -10,7 +10,7 @@ pipeline {
     parameters {
         string(name: 'PROJECT_NAME', defaultValue: 'itau', description: 'Name of the project to build')
         string(name: 'BRANCH', defaultValue: 'master', description: 'Your Git branch to build')
-        string(name: 'GIT_REPO', defaultValue: 'https://github.com/your/repo.git', description: 'Git repository URL') // Replace with your Git repo
+        string(name: 'GIT_REPO', defaultValue: 'https://github.com/gabriellfe/itau.git', description: 'Git repository URL') // Replace with your Git repo
     }
 
     stages {
@@ -25,11 +25,10 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 dir(params.PROJECT_NAME + '-backend') {
-                    script {
-                        def mvnHome = tool name: 'maven', type: 'maven'
-                        def mvnCMD = "${mvnHome}/bin/mvn "
-                        sh "${mvnCMD} clean install"
-                    }
+                    def mvnHome = tool name: 'maven', type: 'maven'
+                    def mvnCMD = "${mvnHome}/bin/mvn "
+                    sh "${mvnCMD} clean install"
+                    
                 }
             }
         }
