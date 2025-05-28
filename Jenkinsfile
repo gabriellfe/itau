@@ -8,17 +8,12 @@ node {
     
     stage('checkout') {
             deleteDir()
-            withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login --username ${DOCKER_LOGIN} --password ${DOCKER_PASSWORD}"
-                    def customImage = docker.build("${imageName}:${pom.version}")
-			        customImage.push()
-                }
             checkout([$class: 'GitSCM',
             branches: [[name: "${branch}"]],
             extensions: [],
             userRemoteConfigs: [[url: 'https://github.com/gabriellfe/itau.git']]])
     }
-    stage('Build and Push Image') {
+    stage('Build and Push Image') {W
             dir("${serviceName}"){
                 sh "${mvnCMD} clean install"
                 def pom = readMavenPom file: 'pom.xml'
