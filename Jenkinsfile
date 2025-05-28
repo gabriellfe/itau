@@ -8,6 +8,11 @@ node {
     
     stage('checkout') {
             deleteDir()
+            withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "docker login --username ${DOCKER_LOGIN} --password ${DOCKER_PASSWORD}"
+                    def customImage = docker.build("${imageName}:${pom.version}")
+			        customImage.push()
+                }
             checkout([$class: 'GitSCM',
             branches: [[name: "${branch}"]],
             extensions: [],
@@ -20,8 +25,8 @@ node {
 
                 withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_LOGIN', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login --username ${DOCKER_LOGIN} --password ${DOCKER_PASSWORD}"
-                    sh "docker build -t ${imageName}:${pom.version}"
-                    sh "docker push ${imageName}:${pom.version}"
+                    def customImage = docker.build("${imageName}:${pom.version}")
+			        customImage.push()
                 }
             }
     }
