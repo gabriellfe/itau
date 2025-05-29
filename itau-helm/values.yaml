@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: gabriellfe31222/itau
+  repository: IMAGE_URL
   pullPolicy: IfNotPresent
-  tag: "0.0.3"
+  tag: "IMAGE_TAG"
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

@@ -27,14 +27,14 @@ node {
     }
     stage('Deploy') {
             dir("itau-helm"){
-                //sh "sed -i 's/IMAGE_URL/${pom.version}/g' ${k8sName}-deployment.yaml"
+                sh "sed -i 's/IMAGE_URL/${imageName}/g' values.yaml"
+                sh "sed -i 's/IMAGE_TAG/${pom.version}/g' values.yaml"
+            }
 
-                // cloud
-                withAWS(credentials:'jenkins-aws', region:'us-east-1') {
-                    sh "aws sts get-caller-identity"
-                  //  sh "aws eks update-kubeconfig --name eks --region us-east-1"
-                  //  sh "kubectl apply -f ./${k8sName}-deployment.yaml -n default --validate=false"
-                    }
+            withAWS(credentials:'jenkins-aws', region:'us-west-1') {
+                //  sh "aws sts get-caller-identity"
+                sh "aws eks update-kubeconfig --name eks --region us-west-1"
+                sh "helm install itau .\itau-helm"
             }
     }
 }
