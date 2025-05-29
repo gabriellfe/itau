@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "4ba3a65e-6abd-4bda-9cc3-f24e7f82fc77",
+		"name": "Itau-backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19908632"
+	},
+	"item": [
+		{
+			"name": "validate",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoiZ2EiLCJTZWVkIjoxMDcsIlJvbGUiOiJBZG1pbiJ9.H71Db2KCUkX0cWA6WIORPekoxgkTowFE2eUYOLffDcA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8080/validate",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generate",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"ga\",\r\n    \"role\":\"Admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/generate",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"generate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -73,7 +73,7 @@ public class JwtService {
     		user = objectMapper.readValue(body, UserDTO.class);
     		log.info("Decoded UserDTO: [{}]", objectMapper.writeValueAsString(user));
 		} catch (Exception e) {
-			log.info("Error to decode JWT [{}]", e);
+			log.error("Error to decode JWT [{}]", e);
 		}
 		return user;
 	}
@@ -86,7 +86,7 @@ public class JwtService {
 		Boolean result = Boolean.TRUE;
 		
 		if (user == null) {
-			result = Boolean.FALSE; 
+			return Boolean.FALSE; 
 		}
 		if (!RoleEnum.getAllValues().contains(user.getRole())) {
 			result = Boolean.FALSE;
