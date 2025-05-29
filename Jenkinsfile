@@ -34,7 +34,7 @@ node {
             withAWS(credentials:'jenkins-aws', region:'us-west-1') {
                 //  sh "aws sts get-caller-identity"
                 sh "aws eks update-kubeconfig --name eks --region us-west-1"
-                sh "helm install itau .\itau-helm"
+                sh "helm install itau ./itau-helm"
             }
     }
 }
